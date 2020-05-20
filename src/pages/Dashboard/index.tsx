@@ -1,4 +1,4 @@
-import React, { useState, formEvent } from 'react';
+import React, { useState, FormEvent } from 'react';
 
 import { FiChevronRight } from 'react-icons/fi';
 import api from '../../services/api';
@@ -7,19 +7,29 @@ import logoImg from '../../assets/logo.svg';
 
 import { Title, Form, Repositories } from './styles';
 
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
 const Dashboard: React.FC = () => {
   const [newRepo, setNewRepo] = useState('');
-  const [repositories, setRepositories] = useState([]);
+  const [repositories, setRepositories] = useState<Repository[]>([]);
 
   async function handleAddRepository(
-    event: formEvent<HTMLFormElement>,
+    event: FormEvent<HTMLFormElement>,
   ): Promise<void> {
     event.preventDefault();
 
-    const response = await api.get(`/repos/${newRepo}`);
+    const response = await api.get<Repository>(`/repos/${newRepo}`);
 
     const repository = response.data;
     setRepositories([...repositories, repository]);
+    setNewRepo('');
   }
 
   return (
@@ -37,21 +47,19 @@ const Dashboard: React.FC = () => {
       </Form>
 
       <Repositories>
-        <a href="teste">
-          <img
-            src="https://avatars2.githubusercontent.com/u/54600663?s=460&u=34b278ddc6a12d2575ae2fe9e5fd44287494ec0f&v=4"
-            alt="Profile"
-          />
-          <div>
-            <strong>fastfeet</strong>
-            <p>
-              Esse desafio faz parte do Desafio Final, que é uma aplicação
-              completa (Back-end, Front-end e Mobile) que é avaliada para
-              emissão do Certificado do Bootcamp GoStack.
-            </p>
-          </div>
-          <FiChevronRight size={20} />
-        </a>
+        {repositories.map((repository) => (
+          <a key={repository.full_name} href="teste">
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>{repository.description}</p>
+            </div>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
       </Repositories>
     </>
   );
